@@ -5,7 +5,7 @@ const router = require('express').Router();
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 
-const { PORT = 4000 } = process.env;
+const { PORT = 3000 } = process.env;
 const app = express();
 
 app.listen(PORT);
