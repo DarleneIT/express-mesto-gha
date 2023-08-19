@@ -21,8 +21,8 @@ module.exports.createCard = (req, res) => {
     .then((card) => {
       Card.findById(card._id)
         .populate('owner')
-        .then(() => res.send(card))
-        .catch(() => res.status(404).send({ message: 'Карточка с таким id не найдена' }));
+        .then(() => res.status(201).send(card))
+        .catch(() => res.status(500).send({ message: 'На сервере произошла ошибка' }));
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
