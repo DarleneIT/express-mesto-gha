@@ -91,10 +91,10 @@ module.exports.dislikeCard = (req, res, next) => {
 module.exports.deleteCard = (req, res, next) => {
   const { userId } = req.user;
 
-  Card.findByIdAndRemove(req.params.cardId)
+  Card.findById(req.params.cardId)
     .then((card) => {
       if (!card) {
-        next(new NotFoundError('Карточка с таким id не найдена'));
+        throw new NotFoundError('Карточка с таким id не найдена');
       }
 
       const { owner: cardId } = card;
@@ -107,11 +107,10 @@ module.exports.deleteCard = (req, res, next) => {
     })
     .then((deletedCard) => {
       if (!deletedCard) {
-        throw new NotFoundError('Карточка удалена');
+        throw new NotFoundError('Карточка уже удалена');
       }
 
       res.send({ data: deletedCard });
     })
-
     .catch(next);
 };
