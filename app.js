@@ -28,14 +28,14 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(helmet());
 
-app.use(auth);
-
 app.use('/', router);
+app.post('/signin', login);
+app.post('/signup', createUser);
+
+app.use(auth);
 
 app.use('/cards', auth, cardsRouter);
 app.use('/users', auth, usersRouter);
-app.post('/signin', login);
-app.post('/signup', createUser);
 
 app.use('*', (req, res, next) => {
   next(new NotFoundError('Cтраница не найдена'));
