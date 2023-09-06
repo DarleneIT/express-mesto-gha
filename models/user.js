@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const UnauthorizedError = require('../errors/Unauthorized');
 
 const URL_REGEX = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
 
@@ -61,15 +62,15 @@ userSchema.statics.findUserByCredentials = async function findUserByCredentials(
   return this.findOne({ email })
     .select('+password')
     .then((user) => {
-      if (user) {
-        return bcrypt.compare(password, user.password).then((matched) => {
-          if (matched) return user;
-
-          return Promise.reject();
-        });
+      if (!user) {
+        throw new UnauthorizedError('Пожалуйста, проверьте корректность почты или пароля');
       }
-
-      return Promise.reject();
+      return bcrypt.compare(password, user.password).then((matched) => {
+        if (!matched) {
+          throw new UnauthorizedError('Пожалуйста, проверьте корректность почты или пароля');
+        }
+        return user;
+      });
     });
 };
 
