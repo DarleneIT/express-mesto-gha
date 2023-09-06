@@ -74,7 +74,7 @@ module.exports.editUser = (req, res, next) => {
       { new: true, runValidators: true },
     )
     .orFail()
-    .then((user) => res.status(201).send(user))
+    .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err instanceof mongoose.Error.ValidationError) {
         next(new BadRequestError('Переданы некорректные данные'));
