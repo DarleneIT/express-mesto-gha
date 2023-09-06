@@ -4,14 +4,14 @@ const { celebrate, Joi } = require('celebrate');
 const URL_REGEX = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
 
 const {
-  getUsers,
+  getAllUsers,
   getCurrentUser,
   getUserById,
   editUser,
   editUserAvatar,
 } = require('../controllers/users');
 
-router.get('/', getUsers);
+router.get('/', getAllUsers);
 router.get('/me', getCurrentUser);
 router.get('/:userId', celebrate({
   params: Joi.object().keys({

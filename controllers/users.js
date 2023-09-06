@@ -5,7 +5,6 @@ const mongoose = require('mongoose');
 const User = require('../models/user');
 
 const BadRequestError = require('../errors/BadRequest');
-const UnauthorizedError = require('../errors/Unauthorized');
 const NotFoundError = require('../errors/NotFound');
 const ConflictError = require('../errors/Conflict');
 
@@ -20,16 +19,9 @@ module.exports.createUser = (req, res, next) => {
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
-    .then((user) => {
-      const { _id } = user;
-      return res.status(201).send({
-        _id,
-        name,
-        about,
-        avatar,
-        email,
-      });
-    })
+    .then((user) => res.status(201).send({
+      name: user.name, about: user.about, avatar: user.avatar, _id: user._id, email: user.email,
+    }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError('Проверьте корректность отправленных данных'));
@@ -44,23 +36,12 @@ module.exports.createUser = (req, res, next) => {
 };
 
 module.exports.getCurrentUser = (req, res, next) => {
-  const { userId } = req.user;
-  User.findById(userId)
-    .then((user) => {
-      if (user) return res.status(200).send({ user });
-
-      throw new NotFoundError('Пользователь с таким id не найден');
-    })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new BadRequestError('Передан некорректный id'));
-      } else {
-        next(err);
-      }
-    });
+  User.findById(req.user._id)
+    .then((users) => res.status(200).send({ users }))
+    .catch(next);
 };
 
-module.exports.getUsers = (_, res, next) => {
+module.exports.getAllUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.status(200).send({ users }))
     .catch(next);
@@ -125,13 +106,13 @@ module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
   User.findUserByCredentials(email, password)
-    .then(({ _id: userId }) => {
-      if (userId) {
-        const token = jwt.sign({ userId }, SECRET_KEY, { expiresIn: '7d' });
-
-        return res.send({ _id: token });
-      }
-      throw new UnauthorizedError('Неправильные почта или пароль');
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, SECRET_KEY, {
+        expiresIn: '7d',
+      });
+      res.send({ token });
     })
-    .catch(next);
+    .catch((err) => {
+      next(err);
+    });
 };

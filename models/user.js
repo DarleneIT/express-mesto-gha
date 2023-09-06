@@ -54,24 +54,23 @@ const userSchema = new mongoose.Schema(
 
   {
     versionKey: false,
-    statics: {
-      findUserByCredentials(email, password) {
-        return this.findOne({ email })
-          .select('+password')
-          .then((user) => {
-            if (user) {
-              return bcrypt.compare(password, user.password).then((matched) => {
-                if (matched) return user;
-
-                return Promise.reject();
-              });
-            }
-
-            return Promise.reject();
-          });
-      },
-    },
   },
 );
+
+userSchema.statics.findUserByCredentials = async function findUserByCredentials(email, password) {
+  return this.findOne({ email })
+    .select('+password')
+    .then((user) => {
+      if (user) {
+        return bcrypt.compare(password, user.password).then((matched) => {
+          if (matched) return user;
+
+          return Promise.reject();
+        });
+      }
+
+      return Promise.reject();
+    });
+};
 
 module.exports = mongoose.model('user', userSchema);
