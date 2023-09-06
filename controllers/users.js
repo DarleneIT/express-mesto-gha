@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 
 const User = require('../models/user');
 
@@ -46,7 +47,7 @@ module.exports.getCurrentUser = (req, res, next) => {
   const { userId } = req.user;
   User.findById(userId)
     .then((user) => {
-      if (user) return res.send({ user });
+      if (user) return res.status(200).send({ user });
 
       throw new NotFoundError('Пользователь с таким id не найден');
     })
@@ -61,7 +62,7 @@ module.exports.getCurrentUser = (req, res, next) => {
 
 module.exports.getUsers = (_, res, next) => {
   User.find({})
-    .then((users) => res.send({ data: users }))
+    .then((users) => res.status(200).send({ users }))
     .catch(next);
 };
 
@@ -69,22 +70,20 @@ module.exports.getUserById = (req, res, next) => {
   User.findById(req.params.userId)
     .orFail()
     .then((user) => {
-      if (!user) {
-        next(new NotFoundError('Пользователь с таким id не найден'));
-      } else {
-        res.send(user);
-      }
+      res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new BadRequestError('Переданы некорректные данные'));
+      if (err instanceof mongoose.Error.CastError) {
+        next(new BadRequestError('Передан некорректный id'));
+      } else if (err instanceof mongoose.Error.DocumentNotFoundError) {
+        next(new NotFoundError('Пользователь с таким id не найден'));
       } else {
         next(err);
       }
     });
 };
 
-module.exports.editUser = (req, res) => {
+module.exports.editUser = (req, res, next) => {
   const userId = req.user._id;
   const { name, about } = req.body;
   User
@@ -93,24 +92,15 @@ module.exports.editUser = (req, res) => {
       { name, about },
       { new: true, runValidators: true },
     )
-    .then((user) => {
-      if (!user) {
-        res
-          .status(404)
-          .send({ message: 'Пользователь с таким id не найден' });
-      } else {
-        res.send({ user });
-      }
-    })
+    .orFail()
+    .then((user) => res.status(201).send(user))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({
-          message: 'Переданы некорректные данные',
-        });
+      if (err instanceof mongoose.Error.ValidationError) {
+        next(new BadRequestError('Переданы некорректные данные'));
+      } else if (err instanceof mongoose.Error.DocumentNotFoundError) {
+        next(new NotFoundError('Пользователь с таким id не найден'));
       } else {
-        res.status(500).send({
-          message: 'На сервере произошла ошибка',
-        });
+        next(err);
       }
     });
 };

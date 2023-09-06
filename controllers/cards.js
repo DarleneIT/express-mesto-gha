@@ -4,11 +4,11 @@ const ForbiddenError = require('../errors/Forbidden');
 const NotFoundError = require('../errors/NotFound');
 const BadRequestError = require('../errors/BadRequest');
 
-module.exports.getCards = (_, res, next) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
     .populate(['owner', 'likes'])
     .then((cards) => {
-      res.send(cards);
+      res.status(200).send(cards);
     })
     .catch(next);
 };
