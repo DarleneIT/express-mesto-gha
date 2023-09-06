@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const { URL_REGEX } = require('../utils/constants');
+const URL_REGEX = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
 
 const cardSchema = new mongoose.Schema(
   {
@@ -9,7 +9,7 @@ const cardSchema = new mongoose.Schema(
       required: [true, 'Поле "name" должно быть заполнено'],
       validate: {
         validator: ({ length }) => length >= 2 && length <= 30,
-        message: 'Имя карточки должно быть длиной от 2 до 30 символов',
+        message: 'Имя карточки должно быть от 2 до 30 символов',
       },
     },
 
@@ -18,7 +18,7 @@ const cardSchema = new mongoose.Schema(
       required: [true, 'Поле "link" должно быть заполнено'],
       validate: {
         validator: (url) => URL_REGEX.test(url),
-        message: 'Требуется ввести URL',
+        message: 'Введите корректный URL',
       },
     },
 

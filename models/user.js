@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
-const { URL_REGEX } = require('../utils/constants');
+const URL_REGEX = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
 
 const userSchema = new mongoose.Schema(
   {
@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema(
       default: 'Жак-Ив Кусто',
       validate: {
         validator: ({ length }) => length >= 2 && length <= 30,
-        message: 'Имя пользователя должно быть длиной от 2 до 30 символов',
+        message: 'Имя должно быть длиной от 2 до 30 символов',
       },
     },
 
@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema(
       default: 'Исследователь',
       validate: {
         validator: ({ length }) => length >= 2 && length <= 30,
-        message: 'Информация о пользователе должна быть длиной от 2 до 30 символов',
+        message: 'Информация должна быть длиной от 2 до 30 символов',
       },
     },
 
@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema(
         'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
       validate: {
         validator: (url) => URL_REGEX.test(url),
-        message: 'Введите URL',
+        message: 'Введите корректный URL',
       },
     },
 
@@ -38,8 +38,10 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Поле должно быть заполнено'],
       unique: true,
       validate: {
-        validator: (email) => /.+@.+\..+/.test(email),
-        message: 'Введите корректный e-mail',
+        validator(email) {
+          return /.+@.+\..+/.test(email);
+        },
+        message: 'Введите корректный email',
       },
     },
 
@@ -47,10 +49,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Поле должно быть заполнено'],
       select: false,
-      validate: {
-        validator: ({ length }) => length >= 3,
-        message: 'Пароль должен иметь не менее 3х символов ',
-      },
     },
   },
 
@@ -73,7 +71,7 @@ const userSchema = new mongoose.Schema(
           });
       },
     },
-  }
+  },
 );
 
 module.exports = mongoose.model('user', userSchema);

@@ -1,7 +1,6 @@
 const Card = require('../models/card');
 
-// const ForbiddenError = require('../errors/Forbidden');
-
+const ForbiddenError = require('../errors/Forbidden');
 const NotFoundError = require('../errors/NotFound');
 const BadRequestError = require('../errors/BadRequest');
 
@@ -90,23 +89,29 @@ module.exports.dislikeCard = (req, res, next) => {
 };
 
 module.exports.deleteCard = (req, res, next) => {
+  const { userId } = req.user;
+
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
       if (!card) {
         next(new NotFoundError('Карточка с таким id не найдена'));
-        return;
       }
-      res.send({ message: 'Карточка удалена' });
+
+      const { owner: cardId } = card;
+
+      if (cardId.valueOf() !== userId) {
+        throw new ForbiddenError('Вы не можете удалить эту карточку');
+      }
+
+      return Card.findByIdAndDelete(cardId);
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
-        next(
-          new BadRequestError(
-            'Переданы некорректные данные',
-          ),
-        );
-      } else {
-        next(err);
+    .then((deletedCard) => {
+      if (!deletedCard) {
+        throw new NotFoundError('Карточка удалена');
       }
-    });
+
+      res.send({ data: deletedCard });
+    })
+
+    .catch(next);
 };

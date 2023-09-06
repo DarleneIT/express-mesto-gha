@@ -5,17 +5,17 @@ const URL_REGEX = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()
 
 const {
   getUsers,
+  getCurrentUser,
   getUserById,
   editUser,
   editUserAvatar,
 } = require('../controllers/users');
 
 router.get('/', getUsers);
-router.get('/me', getUserById);
-
+router.get('/me', getCurrentUser);
 router.get('/:userId', celebrate({
   params: Joi.object().keys({
-    id: Joi.string().length(24).hex().required(),
+    userId: Joi.string().length(24).hex().required(),
   }),
 }), getUserById);
 
