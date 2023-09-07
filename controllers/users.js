@@ -8,7 +8,7 @@ const BadRequestError = require('../errors/BadRequest');
 const NotFoundError = require('../errors/NotFound');
 const ConflictError = require('../errors/Conflict');
 
-const SECRET_KEY = '0beb9865b2a6f1d2b90f66a9a8e6c642e0b8e34593c9a71f5b7cbce0cdd2e2cd';
+const { SECRET_KEY } = require('../utils/constants');
 
 module.exports.createUser = (req, res, next) => {
   const {
